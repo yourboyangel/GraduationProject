@@ -2,37 +2,51 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { Song } from "@/types";
 
-export default async function getSongsByTitle(title: string, genres?: string): Promise<Song[]> {
+const getSongsByTitle = async (
+    title: string,
+    genres: string[],
+    limitResults: boolean = false
+): Promise<Song[]> => {
     const supabase = createServerComponentClient({
         cookies: cookies
     });
 
     try {
-        let query = supabase.from('songs').select('*');
+        let query = supabase
+            .from('songs')
+            .select('*');
 
-        // Apply search filter
-        if (title) {
-            query = query.or(`title.ilike.%${title}%,author.ilike.%${title}%`);
-        }
-
-        // Apply genre filter
+        // Apply genre filter if genres are selected
         if (genres && genres.length > 0) {
-            const genreArray = genres.split(',');
-            if (genreArray.length > 0) {
-                query = query.in('genre', genreArray);
-            }
+            query = query.in('genre', genres);
         }
 
-        const { data, error } = await query.order('created_at', { ascending: false });
+        // Apply title search if present
+        if (title) {
+            query = query.ilike('title', `%${title}%`);
+        }
+
+        // Show last 10 recently added/searched songs when no search term
+        if (limitResults && !title) {
+            query = query
+                .order('created_at', { ascending: false })
+                .limit(10);
+        } else {
+            query = query.order('created_at', { ascending: false });
+        }
+
+        const { data, error } = await query;
 
         if (error) {
-            console.error('Error fetching songs:', error);
+            console.error('Search error:', error);
             return [];
         }
 
-        return data || [];
+        return (data as Song[]) || [];
     } catch (error) {
-        console.error('Error in getSongsByTitle:', error);
+        console.error('Unexpected error:', error);
         return [];
     }
-}
+};
+
+export default getSongsByTitle;

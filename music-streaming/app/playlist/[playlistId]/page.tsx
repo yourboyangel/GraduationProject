@@ -1,13 +1,37 @@
-import getLikedSongs from "@/actions/getLikedSongs";
+import getPlaylistById from "@/actions/getPlaylistById";
 import Header from "@/components/Header";
 import Image from "next/image";
-import LikedContent from "./components/LikedContent";
+import PlaylistContent from "./components/PlaylistContent";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import ShuffleButton from "@/components/ShuffleButton";
 
 export const revalidate = 0;
 
-const Liked = async () => {
-    const songs = await getLikedSongs();
+interface PlaylistPageProps {
+    params: {
+        playlistId: string;
+    }
+}
+
+const Playlist = async ({ params }: PlaylistPageProps) => {
+    const supabase = createServerComponentClient({ cookies });
+    const playlist = await getPlaylistById(params.playlistId);
+    const songs = playlist?.songs || [];
+
+    if (!playlist) {
+        return (
+            <div className="text-white p-8">Playlist not found.</div>
+        );
+    }
+
+    // Get the public URL for the playlist image
+    const imageUrl = playlist.image_path && !playlist.image_path.startsWith('/') 
+        ? supabase.storage
+            .from('images')
+            .getPublicUrl(playlist.image_path)
+            .data.publicUrl
+        : playlist.image_path || "/images/default_playlist.png";
 
     return (
         <div className="
@@ -35,12 +59,15 @@ const Liked = async () => {
                             w-32
                             lg:h-44
                             lg:w-44
+                            min-w-[128px]
+                            min-h-[128px]
                         ">
                             <Image
                                 fill
-                                src="/images/liked.png"
-                                alt="Playlist"
-                                className="object-cover"
+                                alt={playlist.name || "Playlist"}
+                                className="object-cover rounded-lg"
+                                src={imageUrl}
+                                priority
                             />
                         </div>
                         <div className="
@@ -50,7 +77,7 @@ const Liked = async () => {
                             mt-4
                             md:mt-0
                         ">
-                            <p className="hidden md:block font-semibold text-sm">
+                            <p className="hidden md:block font-semibold text-sm text-white">
                                 Playlist
                             </p>
                             <h1 className="
@@ -59,8 +86,10 @@ const Liked = async () => {
                                 sm:text-5xl
                                 lg:text-7xl
                                 font-bold
+                                break-words
+                                max-w-[800px]
                             ">
-                                Liked Songs
+                                {playlist.name || "Untitled Playlist"}
                             </h1>
                         </div>
                     </div>
@@ -74,9 +103,9 @@ const Liked = async () => {
                     )}
                 </div>
             </Header>
-            <LikedContent songs={songs} />
+            <PlaylistContent songs={songs} />
         </div>
     );
 }
 
-export default Liked;
+export default Playlist;

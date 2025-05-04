@@ -3,27 +3,39 @@
 import useAuthModal from "@/hooks/useAuthModal";
 import useUploadModal from "@/hooks/useUploadModal";
 import { useUser } from "@/hooks/useUser";
-import { Song } from "@/types";
+import { Playlist } from "@/types";
 import { AiOutlinePlus } from "react-icons/ai";
 import { TbPlaylist } from "react-icons/tb";
-import MediaItem from "./MediaItem";
-import useOnPlay from "@/hooks/useOnPlay";
+import { MdPlaylistAdd } from "react-icons/md";
+import PlaylistItem from "./PlaylistItem";
+import useCreatePlaylistModal from "@/hooks/useCreatePlaylistModal";
+import { useRouter } from "next/navigation";
 
 interface LibraryProps {
-    songs: Song[];
+    playlists: Playlist[];
 }
 
-const Library = ({ songs }: LibraryProps) => {
+const Library: React.FC<LibraryProps> = ({ playlists }) => {
     const authModal = useAuthModal();
     const uploadModal = useUploadModal();
+    const createPlaylistModal = useCreatePlaylistModal();
     const { user } = useUser();
-    const onPlay = useOnPlay(songs);
+    const router = useRouter();
+
     const onClick = () => {
         if (!user) {
             return authModal.onOpen();
         }
 
         return uploadModal.onOpen();
+    };
+
+    const onCreatePlaylist = () => {
+        if (!user) {
+            return authModal.onOpen();
+        }
+
+        return createPlaylistModal.onOpen();
     };
 
     return (
@@ -35,38 +47,50 @@ const Library = ({ songs }: LibraryProps) => {
                         Your Library
                     </p>
                 </div>
-                <AiOutlinePlus 
-  onClick={onClick}
-  size={20}
-  className="
-    text-neutral-400 
-    cursor-pointer 
-    hover:text-white 
-    transform 
-    transition-transform 
-    duration-500 
-    hover:rotate-[360]
-  "
-/>
-
+                <div className="flex items-center gap-x-2">
+                    <AiOutlinePlus
+                        onClick={onClick}
+                        size={20}
+                        className="
+                            text-neutral-400 
+                            cursor-pointer 
+                            hover:text-white 
+                            transition
+                            transform
+                            hover:rotate-90
+                        "
+                    />
+                    <MdPlaylistAdd
+                        onClick={onCreatePlaylist}
+                        size={25}
+                        className="
+                            text-neutral-400 
+                            cursor-pointer 
+                            hover:text-white 
+                            transition
+                            transform
+                            hover:scale-110
+                        "
+                    />
+                </div>
             </div>
             <div className="
-            flex
-            flex-col
-            gap-y-2
-            mt-4
-            px-3
+                flex
+                flex-col
+                gap-y-2
+                mt-4
+                px-3
             ">
-                {songs.map((item) => (
-                    <MediaItem
-                        onClick={(id: string) => onPlay(id)}
+                {playlists.map((item) => (
+                    <PlaylistItem
                         key={item.id}
                         data={item}
+                        onClick={() => router.push(`/playlist/${item.id}`)}
                     />
                 ))}
             </div>
         </div>
-    )
+    );
 }
 
 export default Library;

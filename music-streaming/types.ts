@@ -1,14 +1,12 @@
-
-
-export interface Song{
+export interface Song {
     id: string;
     user_id: string;
-    author: string;
     title: string;
+    author: string;
     song_path: string;
     image_path: string;
-    genre: string;
-};
+    created_at: string;
+}
 
 export interface UserDetails {
     id: string;
@@ -17,4 +15,13 @@ export interface UserDetails {
     full_name?: string;
     avatar_url?: string;
 };
+
+export interface Playlist {
+    id: string;
+    user_id: string;
+    name: string;
+    image_path: string;
+    description?: string;
+    created_at: string;
+}
 

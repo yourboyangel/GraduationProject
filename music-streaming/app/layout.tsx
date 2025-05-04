@@ -8,12 +8,15 @@ import ModalProvider from "@/providers/ModalProvider";
 import ToasterProvider from "@/providers/ToasterProvider";
 import getSongsByUserId from "@/actions/getSongsByUserId";
 import Player from "@/components/Player";
+import CreatePlaylistModal from "@/components/CreatePlaylistModal";
+import getPlaylists from "@/actions/getPlaylists";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 const font = Figtree({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-
 
 export const metadata: Metadata = {
   title: "Lunatone",
@@ -21,29 +24,34 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 0;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const userSongs = await getSongsByUserId();
+  const userPlaylists = await getPlaylists();
+
   return (
     <html lang="en">
-      <body
-        className={`${font.variable} ${font.variable} antialiased`}
-      >
+      <body className={font.className}>
         <ToasterProvider/>
         <SupabaseProvider>
           <UserProvider>
             <ModalProvider />
-            <Sidebar songs={userSongs}>{children}</Sidebar> 
+            <CreatePlaylistModal />
+            <Sidebar songs={userSongs} playlists={userPlaylists}>
+              <Suspense fallback={<Loading />}>
+                {children}
+              </Suspense>
+            </Sidebar> 
             <Player />
           </UserProvider>
-         
         </SupabaseProvider>
-        
-       
       </body>
     </html>
   );
 }
+
+

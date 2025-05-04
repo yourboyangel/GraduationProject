@@ -22,18 +22,18 @@ const genres = [
 ] as const;
 
 interface GenreFilterProps {
-    currentGenres?: string;
-    searchQuery?: string;
+    currentGenres: string[];  // Changed back to string[]
+    searchQuery: string;
 }
 
 const GenreFilter: React.FC<GenreFilterProps> = ({ 
-    currentGenres = '',
+    currentGenres = [],
     searchQuery = ''
 }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [selectedGenres, setSelectedGenres] = useState<Set<string>>(
-        new Set(currentGenres ? currentGenres.split(',') : [])
+        new Set(currentGenres)
     );
 
     const toggleGenre = (genre: string) => {

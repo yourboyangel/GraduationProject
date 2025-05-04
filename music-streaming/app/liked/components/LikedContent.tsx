@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import MediaItem from "@/components/MediaItem";
 import LikeButton from "@/components/LikeButton";
 import useOnPlay from "@/hooks/useOnPlay";
+import AddToPlaylistButton from "@/components/AddToPlaylistButton";
+import usePlayer from "@/hooks/usePlayer";
 
 interface LikedContentProps{
     songs: Song[];
@@ -17,13 +19,23 @@ const LikedContent:React.FC<LikedContentProps> = ({
 }) => {
     const router = useRouter();
     const { isLoading, user } = useUser();
+    const player = usePlayer();
     const onPlay = useOnPlay(songs);
 
-    useEffect(()=>{
-        if (!isLoading && !user){
+    useEffect(() => {
+        if (!isLoading && !user) {
             router.replace('/');
         }
     }, [isLoading, user, router]);
+
+    // Only set player IDs once when songs change
+    useEffect(() => {
+        const songIds = songs.map(song => song.id);
+        // Only update if the IDs are different
+        if (JSON.stringify(songIds) !== JSON.stringify(player.ids)) {
+            player.setIds(songIds);
+        }
+    }, [songs]); // Remove player from dependencies
 
     if (songs.length === 0) {
         return (
@@ -49,11 +61,14 @@ const LikedContent:React.FC<LikedContentProps> = ({
                 >
                     <div className="flex-1">
                         <MediaItem 
-                            onClick={(id: string)=>onPlay(id)}
+                            onClick={(id: string) => onPlay(id)}
                             data={song}
                         />
                     </div>
-                    <LikeButton songId={song.id} />
+                    <div className="flex gap-x-2 items-center">
+                        <AddToPlaylistButton songId={song.id} />
+                        <LikeButton songId={song.id} />
+                    </div>
                 </div>
             ))}
         </div>

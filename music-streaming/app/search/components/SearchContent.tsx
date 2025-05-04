@@ -6,6 +6,7 @@ import LikeButton from "@/components/LikeButton";
 import { useUser } from "@/hooks/useUser";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import usePlayer from "@/hooks/usePlayer"; // Add this import
+import AddToPlaylistButton from "@/components/AddToPlaylistButton";
 
 interface SearchContentProps {
     songs: Song[];
@@ -61,7 +62,10 @@ const SearchContent: React.FC<SearchContentProps> = ({
                             data={song}
                         />
                     </div>
-                    <LikeButton songId={song.id} />
+                    <div className="flex gap-x-2 items-center">
+                        <AddToPlaylistButton songId={song.id} />
+                        <LikeButton songId={song.id} />
+                    </div>
                 </div>
             ))}
         </div>

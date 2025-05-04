@@ -10,7 +10,7 @@ import Slider from "./Slider";
 import usePlayer from "@/hooks/usePlayer";
 import { useEffect, useState } from "react";
 import useSound from "use-sound";
-
+import AddToPlaylistButton from "@/components/AddToPlaylistButton";
 
 interface PlayerContentProps {
     song: Song;
@@ -34,14 +34,14 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
         }
 
         const currentIndex = player.ids.findIndex((id) => id === player.activeId);
-        const nextSong = player.ids[currentIndex+1];
+        const nextSong = player.ids[currentIndex + 1];
 
-        if(!nextSong){
+        if (!nextSong) {
             return player.setId(player.ids[0]);
         }
 
         player.setId(nextSong);
-    }
+    };
 
     const onPlayPrevious = () => {
         if (player.ids.length === 0) {
@@ -101,7 +101,10 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
             <div className="flex w-full justify-start">
                 <div className="flex items-center gap-x-4">
                     <MediaItem data={song} />
-                    <LikeButton songId={song.id} />
+                    <div className="flex gap-x-2 items-center">
+                        <AddToPlaylistButton songId={song.id} />
+                        <LikeButton songId={song.id} />
+                    </div>
                 </div>
             </div>
 

@@ -17,13 +17,11 @@ interface SearchProps {
 export const revalidate = 0;
 
 const Search = async ({ searchParams }: SearchProps) => {
-    const title = await Promise.resolve(searchParams?.title || '');
-    const genres = await Promise.resolve(searchParams?.genres || '');
+    const title = searchParams?.title || '';
+    const genres = searchParams?.genres ? searchParams.genres.split(',') : [];
     
-    // Use different data source based on whether there's a search query
-    const songs = title 
-        ? await getSongsByTitle(title, genres)
-        : await getRecentSearches();
+    // Pass a limit parameter when no search term is provided
+    const songs = await getSongsByTitle(title, genres, !title);
 
     return (
         <div className="
