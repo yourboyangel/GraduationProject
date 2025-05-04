@@ -7,11 +7,10 @@ export default async function getRecentSearches(): Promise<Song[]> {
         cookies: cookies
     });
 
-    // Get current user
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return [];
 
-    // Get user's recent search history
+    // Get the 10 most recent unique songs from search history
     const { data: searchHistory } = await supabase
         .from('search_history')
         .select('song_id')
@@ -19,20 +18,10 @@ export default async function getRecentSearches(): Promise<Song[]> {
         .order('created_at', { ascending: false })
         .limit(10);
 
-    if (!searchHistory || searchHistory.length === 0) {
-        // If no search history, return recently added songs
-        const { data: recentSongs } = await supabase
-            .from('songs')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10);
-        
-        return recentSongs || [];
-    }
+    if (!searchHistory || searchHistory.length === 0) return [];
 
+    // Get the actual songs
     const songIds = searchHistory.map(history => history.song_id);
-
-    // Get songs from the search history
     const { data: songs } = await supabase
         .from('songs')
         .select('*')

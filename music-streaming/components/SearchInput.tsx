@@ -1,32 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import useDebounce from "@/hooks/useDebounce";
-import { useUser } from "@/hooks/useUser";
 import Input from "./Input";
 
-const SearchInput = () => {
+interface SearchInputProps {
+    defaultValue?: string;
+}
+
+const SearchInput: React.FC<SearchInputProps> = ({ defaultValue = '' }) => {
     const router = useRouter();
-    const [value, setValue] = useState<string>("");
+    const searchParams = useSearchParams();
+    const [value, setValue] = useState(defaultValue);
     const debouncedValue = useDebounce<string>(value, 500);
-    const supabaseClient = useSupabaseClient();
-    const { user } = useUser();
 
     useEffect(() => {
-        router.push(`/search?title=${debouncedValue}`);
-    }, [debouncedValue, router]);
-
-    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setValue(e.target.value);
-    };
+        const params = new URLSearchParams(searchParams.toString());
+        
+        if (debouncedValue) {
+            params.set('title', debouncedValue);
+        } else {
+            params.delete('title');
+        }
+        
+        router.push(`/search?${params.toString()}`);
+    }, [debouncedValue, router, searchParams]);
 
     return (
         <Input 
             placeholder="What do you want to listen to?"
             value={value}
-            onChange={onChange}
+            onChange={(e) => setValue(e.target.value)}
+            className="bg-[#15132B] border-[#2D2053] focus:border-purple-500 text-white"
         />
     );
 };

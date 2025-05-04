@@ -12,6 +12,23 @@ import uniqid from "uniqid";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
 
+const genres = [
+    'Pop',
+    'Rock',
+    'Hip Hop',
+    'R&B',
+    'Electronic',
+    'Jazz',
+    'Classical',
+    'Metal',
+    'Country',
+    'Blues',
+    'Folk',
+    'Indie',
+    'Alternative',
+    'Dance',
+    'Reggae'
+] as const;
 
 const UploadModal = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +48,7 @@ const UploadModal = () => {
             title: "",
             song: null,
             image: null,
+            genre: "Pop" // Default genre
         }
     })
 
@@ -112,7 +130,8 @@ const UploadModal = () => {
                     title: values.title,
                     author: values.author,
                     image_path: imagePath,
-                    song_path: songData.path
+                    song_path: songData.path,
+                    genre: values.genre // Add genre to the insert
                 });
 
             if (supabaseError) {
@@ -158,6 +177,35 @@ const UploadModal = () => {
                 placeholder="Song Author"
                 className="bg-[#15132B] border-[#2D2053] focus:border-purple-500 text-white"
                 />
+                <div>
+                    <div className="pb-1 text-white">
+                        Select Genre
+                    </div>
+                    <select
+                        {...register('genre', { required: true })}
+                        className="
+                            w-full
+                            rounded-md
+                            bg-[#15132B]
+                            border
+                            border-[#2D2053]
+                            p-3
+                            text-white
+                            focus:outline-none
+                            focus:border-purple-500
+                        "
+                    >
+                        {genres.map((genre) => (
+                            <option 
+                                key={genre} 
+                                value={genre}
+                                className="bg-[#15132B]"
+                            >
+                                {genre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div>
                     <div className="pb-1 text-white">
                         Select a Song File

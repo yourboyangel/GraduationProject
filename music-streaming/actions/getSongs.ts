@@ -1,21 +1,39 @@
-import { Song } from "@/types";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { headers, cookies} from "next/headers";
+import { cookies } from "next/headers";
+import { Song } from "@/types";
 
-const getSongs = async (): Promise<Song[]> => {
+export default async function getSongs(limit: number = 10): Promise<Song[]> {
     const supabase = createServerComponentClient({
         cookies: cookies
     });
 
-    const { data, error } = await supabase
-    .from('songs')
-    .select('*')
-    .order('created_at', {ascending: false});
+    const { data: songs, error } = await supabase
+        .from('songs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
-    if(error) {
-        console.log(error);
+    if (error) {
+        console.error(error);
+        return [];
     }
-    return (data as any) || [];
-};
 
-export default getSongs;
+    return songs || [];
+}
+
+export async function getSongsCount(): Promise<number> {
+    const supabase = createServerComponentClient({
+        cookies: cookies
+    });
+
+    const { count, error } = await supabase
+        .from('songs')
+        .select('*', { count: 'exact', head: true });
+
+    if (error) {
+        console.error(error);
+        return 0;
+    }
+
+    return count || 0;
+}
