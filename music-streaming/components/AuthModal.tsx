@@ -44,8 +44,14 @@ const AuthModal = () => {
                 variables: {
                     default:{
                         colors: {
-                            brand: '#404040',
-                            brandAccent: "#22c55e"
+                            brand: 'var(--primary)',
+                            brandAccent: "var(--accent)",
+                            inputBackground: "var(--background)",
+                            inputText: "var(--text-primary)",
+                            inputBorder: "rgba(255, 255, 255, 0.05)",
+                            inputBorderHover: "rgba(255, 255, 255, 0.1)",
+                            inputBorderFocus: "var(--accent)",
+                            inputPlaceholder: "var(--text-secondary)",
                         }
                     }
                 }

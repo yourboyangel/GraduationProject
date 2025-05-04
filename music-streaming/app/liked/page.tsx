@@ -9,7 +9,9 @@ const Liked = async () => {
     return (
         <div
         className="
-        bg-neutral-900
+        bg-gradient-to-b
+        from-[#2D2053]
+        to-[#15132B]
         rounded-lg
         h-full
         w-full
@@ -38,10 +40,9 @@ const Liked = async () => {
                         <Image
                         fill
                         alt="Playlist"
-                        className="object-cover"
+                        className="object-cover rounded-lg"
                         src="/images/liked.png"
                          />
-
                     </div>
                     <div className="
                     flex
@@ -50,7 +51,7 @@ const Liked = async () => {
                     mt-4
                     md:mt-0
                     ">
-                        <p className="hidden md:block font-semibold text-sm">Playlist</p>
+                        <p className="hidden md:block font-semibold text-sm text-white">Playlist</p>
                         <h1 
                         className="
                         text-white

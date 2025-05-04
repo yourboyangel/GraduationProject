@@ -4,6 +4,7 @@ import {usePathname} from "next/navigation";
 import { useMemo } from "react";
 import { BiSearch } from "react-icons/bi";
 import { HiHome } from "react-icons/hi";
+import { BsMoonStars } from "react-icons/bs";
 import Box from "./Box";
 import SidebarItem from "./SidebarItem";
 import Library from "./Library";
@@ -39,7 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ], [pathname]);
     return (
         <div className={twMerge(`
-            flex
+            flex 
             h-full
         `,
         player.activeId && "h-[calc(100%-80px)]"
@@ -50,11 +51,38 @@ const Sidebar: React.FC<SidebarProps> = ({
             md:flex
             flex-col
             gap-y-2
-            bg-black
+            bg-[#15132B]
             h-full
             w-[300px]
             p-2
             ">
+                <div className="flex items-center gap-x-4 px-5 py-4 group cursor-pointer">
+                    <BsMoonStars 
+                        size={34} 
+                        className="
+                            text-[#422B92] 
+                            transition 
+                            duration-300 
+                            group-hover:text-[#5A4F9B] 
+                            group-hover:rotate-12
+                        " 
+                    />
+                    <span className="
+                        text-2xl 
+                        font-bold 
+                        bg-gradient-to-r 
+                        from-[#422B92] 
+                        to-[#5A4F9B] 
+                        text-transparent 
+                        bg-clip-text
+                        transition
+                        duration-300
+                        group-hover:from-[#5A4F9B]
+                        group-hover:to-[#422B92]
+                    ">
+                        Lunatone
+                    </span>
+                </div>
                 <Box>
                     <div
                     className="
@@ -62,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     flex-col
                     gap-y-4
                     px-5
-                    placeholder-sky-400
+                    py-4
                     ">
                         {routes.map((item)=>(
                             <SidebarItem 
@@ -75,7 +103,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <Box className="overflow-y-auto h-full">
                     <Library songs={songs} />
                 </Box>
-
             </div>
             <main className="h-full flex-1 overflow-y-auto py-2">
                 {children}

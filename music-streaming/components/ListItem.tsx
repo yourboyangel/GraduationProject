@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaPlay } from "react-icons/fa";
 
@@ -8,67 +9,61 @@ interface ListItemProps{
     image: string;
     name: string;
     href: string;
+    description?: string;
 }
+
 const ListItem: React.FC<ListItemProps> = ({
     image,
     name,
-    href
+    href,
+    description
 }) => {
-    const router = useRouter();
-
-    const onClick = () => {
-        router.push(href);
-    }
     return (
-        <button
-        onClick={onClick}
+        <Link
+        href={href}
         className="
         relative
         group
         flex
+        flex-col
         items-center
-        rounded-md
+        justify-center
+        rounded-xl
         overflow-hidden
-        gap-x-4
-        bg-neutral-100/10
-        hover:bg-neutral-100/20
+        bg-[#1A1735]
+        hover:bg-[#252242]
         transition
-        pr-4
-        ">
+        p-4
+        gap-x-4
+        "
+        >
             <div className="
             relative
-            min-h-[64px]
-            min-w-[64px]
+            aspect-square
+            w-full
+            h-full
+            rounded-lg
+            overflow-hidden
             ">
-            <Image 
-            className="object-cover"
-            fill
-            src={image}
-            alt="Image"
-            />
+                <Image
+                className="object-cover"
+                src={image}
+                fill
+                alt="Image"
+                />
             </div>
-            <p className="font-medium truncate py-5">
-                {name}
-            </p>
-            <div
-            className="
-            absolute
-            transition
-            opacity-0
-            rounded-full
-            flex
-            items-center
-            justify-center
-            bg-green-500
-            p-4
-            drop-shadow-md
-            right-5
-            group-hover:opacity-100
-            hover:scale-110">
-            <FaPlay className="text-black"/>
+            <div className="flex flex-col items-start w-full pt-4">
+                <p className="font-semibold truncate w-full text-white">
+                    {name}
+                </p>
+                {description && (
+                    <p className="text-neutral-400 text-sm pb-4 w-full truncate">
+                        {description}
+                    </p>
+                )}
             </div>
-
-        </button>
-    )
+        </Link>
+    );
 }
+
 export default ListItem;

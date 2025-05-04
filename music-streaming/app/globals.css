@@ -1,9 +1,45 @@
 @import "tailwindcss";
 
+:root {
+  --primary: #15132B;
+  --primary-light: #2D2053;
+  --accent: #422B92;
+  --accent-light: #5A4F9B;
+  --background: #15132B;
+  --surface: #1A1735;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --gradient-primary: linear-gradient(135deg, #15132B 0%, #1A1735 50%, #15132B 100%);
+  --gradient-surface: linear-gradient(135deg, #15132B 0%, #1A1735 100%);
+  --gradient-accent: linear-gradient(135deg, #2D2053 0%, #422B92 100%);
+}
+
 html,
 body,
-:root{
+:root {
   height: 100%;
-  background-color: black;
+  background: var(--gradient-primary);
   color-scheme: dark;
+  color: var(--text-primary);
+}
+
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }

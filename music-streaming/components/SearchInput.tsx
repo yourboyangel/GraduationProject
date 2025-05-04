@@ -1,44 +1,34 @@
 "use client";
 
-import qs from "query-string";
-import useDebounce from "@/hooks/useDebounce";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import useDebounce from "@/hooks/useDebounce";
+import { useUser } from "@/hooks/useUser";
 import Input from "./Input";
 
 const SearchInput = () => {
     const router = useRouter();
     const [value, setValue] = useState<string>("");
     const debouncedValue = useDebounce<string>(value, 500);
+    const supabaseClient = useSupabaseClient();
+    const { user } = useUser();
 
     useEffect(() => {
-        // Don't navigate if the search term is empty (initial render)
-        if (!debouncedValue) return;
-        
-        const query = {
-            title: debouncedValue,
-        };
-
-        const url = qs.stringifyUrl({
-            url: '/search',
-            query
-        });
-        
-        // Use a small timeout to ensure router is mounted
-        const timeoutId = setTimeout(() => {
-            router.push(url);
-        }, 0);
-        
-        return () => clearTimeout(timeoutId);
+        router.push(`/search?title=${debouncedValue}`);
     }, [debouncedValue, router]);
+
+    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(e.target.value);
+    };
 
     return (
         <Input 
             placeholder="What do you want to listen to?"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={onChange}
         />
     );
-}
+};
 
 export default SearchInput;

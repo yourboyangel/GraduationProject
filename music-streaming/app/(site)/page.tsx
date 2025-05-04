@@ -10,46 +10,50 @@ export default async function Home() {
 
   return (
     <div className="
-    bg-neutral-900
-    rounded-lg
-    h-full
+    bg-gradient-to-b
+    from-[#2D2053]
+    to-[#15132B]
+    min-h-screen
     w-full
     overflow-hidden
     overflow-y-auto
+    rounded-lg
     ">
       <Header>
-        <div className="mb-2">
+        <div className="mb-8">
           <h1 className="
           text-white
           text-3xl
-          font-semibold
+          font-bold
+          mb-6
           ">
-            Welcome Back!
+            Featured Playlists
           </h1>
-          <div
-          className="
+          <div className="
           grid
-          grid-cols-1
+          grid-cols-2
           sm:grid-cols-2
-          xl:grid-cols-3
-          2xl:grid-cols-4
-          gap-3
-          mt-4"> 
+          lg:grid-cols-3
+          xl:grid-cols-5
+          gap-4
+          md:gap-6
+          mt-4
+          "> 
             <ListItem 
-            image="/images/liked.png"
-            name="Liked Songs"
-            href="/liked" /> 
+              image="/images/liked.png"
+              name="Liked Songs"
+              href="/liked"
+            />
+            {/* Add more playlist items here */}
           </div>
         </div>
       </Header>
-      <div className="mt-2 mb-7 px-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-white text-2xl font-semibold">Newest Songs</h1>
-        </div>
-        <div>
+      <div className="mt-2 px-6">
+        <div className="mb-8">
+          <h2 className="text-white text-2xl font-bold mb-6">Recommended for Today</h2>
           <PageContet songs={songs}/>
         </div>
       </div>
-      </div>
+    </div>
   )
 }

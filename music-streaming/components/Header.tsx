@@ -26,10 +26,16 @@ const Header: React.FC<HeaderProps> = ({
     const supabaseClient = useSupabaseClient();
     const {user} = useUser();
 
+    const handleBack = () => {
+        router.back();
+    };
+
+    const handleForward = () => {
+        router.forward();
+    };
 
     const hangleLogout = async () => { 
         const { error } = await supabaseClient.auth.signOut();
-        //TODO: Reset playing songs later
         router.refresh();
 
         if(error){
@@ -44,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({
         className={twMerge(`
             h-fit
             bg-gradient-to-b
-            from-emerald-800
+            from-[#2D2053]/50
             p-6
             `, className)}
         >
@@ -63,29 +69,31 @@ const Header: React.FC<HeaderProps> = ({
                 items-center
                 ">
                     <button
-                    onClick={() => router.back}
+                    onClick={handleBack}
                     className="
                     rounded-full
-                    bg-black
+                    bg-[#15132B]
+                    p-2
                     flex
                     items-center
                     justify-center
                     hover:opacity-75
-                    transiion
+                    transition
                     ">
                         <RxCaretLeft className="text-white" size={35} />
                     </button>
 
                     <button
-                    onClick={() => router.forward}
+                    onClick={handleForward}
                     className="
                     rounded-full
-                    bg-black
+                    bg-[#15132B]
+                    p-2
                     flex
                     items-center
                     justify-center
                     hover:opacity-75
-                    transiion
+                    transition
                     ">
                         <RxCaretRight className="text-white" size={35} />
                     </button>
@@ -130,17 +138,21 @@ const Header: React.FC<HeaderProps> = ({
                 ">
                     {
                         user?(
-                            <div
-                            className="
-                            flex
-                            gap-x-4
-                            items-center">
-                                 <Button onClick={hangleLogout} className="bg-white px-6 py-2">
-                                  Logout  
-                                 </Button>
-                                 <Button onClick={() => router.push('/account')} className="bg-white">
+                            <div className="flex gap-x-4 items-center">
+                                 <Button 
+                                    onClick={hangleLogout} 
+                                    variant="login" 
+                                    className="px-6 py-2"
+                                >
+                                    Logout
+                                </Button>
+                                 <Button 
+                                    onClick={() => router.push('/account')} 
+                                    variant="default"
+                                    className="p-2"
+                                >
                                     <FaUserAlt />
-                                 </Button>
+                                </Button>
                         </div>
                         ) : (
                     
@@ -148,22 +160,18 @@ const Header: React.FC<HeaderProps> = ({
                 <div>
                     <Button
                     onClick={authModal.onOpen}
-                    className="
-                    bg-transparent
-                    text-neutral-300
-                    font-medium
-                    ">
+                    variant="login"
+                    className="px-6 py-2"
+                    >
                         Sign Up
                     </Button>
                 </div>
                 <div>
                     <Button
                     onClick={authModal.onOpen}
-                    className="
-                    bg-white
-                    px-6
-                    py-2
-                    ">
+                    variant="login"
+                    className="px-6 py-2"
+                    >
                         Log In
                     </Button>
                 </div>

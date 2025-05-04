@@ -42,66 +42,80 @@ const UploadModal = () => {
     }
 
     const onSubmit: SubmitHandler<FieldValues> = async (values) => {
-        try{
+        try {
             setIsLoading(true);
 
             const imageFile = values.image?.[0];
             const songFile = values.song?.[0];
 
-            if(!imageFile || !songFile || !user){
-                toast.error("Missing fields");
+            if (!songFile || !user) {
+                toast.error("Missing song file");
                 return;
             }
 
             const uniqueID = uniqid();
 
-            //Upload songs
+            // Upload song
             const {
                 data: songData,
                 error: songError,
             } = await supabaseClient
-            .storage
-            .from('songs')
-            .upload(`song-${values.title}-${uniqueID}`, songFile, {
-                cacheControl: '3600',
-                upsert: false
-            });
+                .storage
+                .from('songs')
+                .upload(`song-${values.title}-${uniqueID}`, songFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
 
-            if(songError){
+            if (songError) {
                 setIsLoading(false);
                 return toast.error('Failed song upload.');
             }
 
-            //Upload image
+            // Get the URL for the default image from public storage
             const {
-                data: imageData,
-                error: imageError,
-            } = await supabaseClient
-            .storage
-            .from('images')
-            .upload(`image-${values.title}-${uniqueID}`, imageFile, {
-                cacheControl: '3600',
-                upsert: false
-            });
+                data: { publicUrl: defaultImageUrl }
+            } = supabaseClient
+                .storage
+                .from('images')
+                .getPublicUrl('default_song.png');
 
-            if(imageError){
-                setIsLoading(false);
-                return toast.error('Failed image upload.');
+            let imagePath = 'default_song.png'; // Default to the base filename
+
+            // Only upload image if user selected one
+            if (imageFile) {
+                const {
+                    data: imageData,
+                    error: imageError,
+                } = await supabaseClient
+                    .storage
+                    .from('images')
+                    .upload(`image-${values.title}-${uniqueID}`, imageFile, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (imageError) {
+                    setIsLoading(false);
+                    return toast.error('Failed image upload.');
+                }
+
+                imagePath = imageData.path;
             }
 
-        const {
-            error: supabaseError
-        } = await supabaseClient
-            .from('songs')
-            .insert({
-                user_id: user.id,
-                title: values.title,
-                author: values.author,
-                image_path: imageData.path,
-                song_path: songData.path
-            });
+            const {
+                error: supabaseError
+            } = await supabaseClient
+                .from('songs')
+                .insert({
+                    user_id: user.id,
+                    title: values.title,
+                    author: values.author,
+                    image_path: imagePath,
+                    song_path: songData.path
+                });
 
-            if(supabaseError){
+            if (supabaseError) {
                 setIsLoading(false);
                 return toast.error(supabaseError.message);
             }
@@ -112,7 +126,7 @@ const UploadModal = () => {
             reset();
             uploadModal.onClose();
 
-        } catch(error) {
+        } catch (error) {
             toast.error("Something went wrong");
         } finally {
             setIsLoading(false);
@@ -134,6 +148,7 @@ const UploadModal = () => {
                 disabled={isLoading}
                 {...register('title',{required: true})}
                 placeholder="Song Title"
+                className="bg-[#15132B] border-[#2D2053] focus:border-purple-500 text-white"
                 />
 
                 <Input 
@@ -141,9 +156,10 @@ const UploadModal = () => {
                 disabled={isLoading}
                 {...register('author',{required: true})}
                 placeholder="Song Author"
+                className="bg-[#15132B] border-[#2D2053] focus:border-purple-500 text-white"
                 />
                 <div>
-                    <div className="pb-1">
+                    <div className="pb-1 text-white">
                         Select a Song File
                     </div>
                     <Input 
@@ -152,21 +168,27 @@ const UploadModal = () => {
                 disabled={isLoading}
                 accept=".mp3"
                 {...register('song',{required: true})}
+                className="bg-[#15132B] border-[#2D2053] focus:border-purple-500 text-white"
                 />
                 </div>
                 <div>
-                    <div className="pb-1">
-                        Select an Image
+                    <div className="pb-1 text-white">
+                        Select an Image (Optional)
                     </div>
                     <Input 
                 id="image"
                 type="file"
                 disabled={isLoading}
                 accept="image/*"
-                {...register('image',{required: true})}
+                {...register('image')} // Removed required validation
+                className="bg-[#15132B] border-[#2D2053] focus:border-purple-500 text-white"
                 />
                 </div>
-                <Button disabled={isLoading} type="submit">
+                <Button 
+                disabled={isLoading} 
+                type="submit"
+                className="bg-purple-600 hover:bg-purple-700"
+                >
                     Create
                 </Button>
             </form>

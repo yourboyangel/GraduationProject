@@ -24,7 +24,7 @@ const Modal: React.FC<ModalProps> = ({
             <Dialog.Portal>
                 <Dialog.Overlay
                     className="
-                    bg-neutral-900/90
+                    bg-[#15132B]/90
                     backdrop-blur-sm
                     fixed
                     inset-0
@@ -35,7 +35,7 @@ const Modal: React.FC<ModalProps> = ({
                     fixed
                     drop-shadow-md
                     border
-                    border-neutral-700
+                    border-[#2D2053]
                     top-[50%]
                     left-[50%]
                     max-h-full
@@ -47,8 +47,8 @@ const Modal: React.FC<ModalProps> = ({
                     md:max-w-[450px]
                     translate-x-[-50%]
                     translate-y-[-50%]
-                    rounded-md
-                    bg-neutral-800
+                    rounded-xl
+                    bg-[#1A1735]
                     p-[25px]
                     focus:outline-none
                     "
@@ -56,6 +56,7 @@ const Modal: React.FC<ModalProps> = ({
                     <Dialog.Title
                         className="
                         text-xl
+                        text-white
                         text-center
                         font-bold
                         mb-4
@@ -67,7 +68,8 @@ const Modal: React.FC<ModalProps> = ({
                         mb-5
                         text-sm
                         leading-normal
-                        text-center">
+                        text-center
+                        text-neutral-300">
                         {description}
                     </Dialog.Description>
                     <div>
