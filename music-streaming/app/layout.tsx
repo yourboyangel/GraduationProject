@@ -12,6 +12,7 @@ import CreatePlaylistModal from "@/components/CreatePlaylistModal";
 import getPlaylists from "@/actions/getPlaylists";
 import { Suspense } from "react";
 import Loading from "./loading";
+import PageTransition from "@/components/PageTransition";
 
 const font = Figtree({
   variable: "--font-geist-sans",
@@ -42,10 +43,14 @@ export default async function RootLayout({
             <ModalProvider />
             <CreatePlaylistModal />
             <Sidebar songs={userSongs} playlists={userPlaylists}>
-              <Suspense fallback={<Loading />}>
-                {children}
-              </Suspense>
-            </Sidebar> 
+              <div className="h-full">
+                <Suspense fallback={<Loading />}>
+                  <PageTransition>
+                    {children}
+                  </PageTransition>
+                </Suspense>
+              </div>
+            </Sidebar>
             <Player />
           </UserProvider>
         </SupabaseProvider>

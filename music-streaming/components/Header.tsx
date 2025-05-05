@@ -10,21 +10,28 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useUser } from "@/hooks/useUser";
 import { FaUserAlt } from "react-icons/fa";
 import toast from "react-hot-toast";
-
+import { useEffect, useState } from "react";
+import usePlayer from "@/hooks/usePlayer";
 
 interface HeaderProps {
     children: React.ReactNode;
     className?: string;
 }
+
 const Header: React.FC<HeaderProps> = ({
     children, 
     className
 }) => {
     const authModal = useAuthModal();
     const router = useRouter();
-
     const supabaseClient = useSupabaseClient();
-    const {user} = useUser();
+    const { user, isLoading } = useUser();
+    const [isMounted, setIsMounted] = useState(false);
+    const player = usePlayer();
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleBack = () => {
         router.back();
@@ -34,8 +41,9 @@ const Header: React.FC<HeaderProps> = ({
         router.forward();
     };
 
-    const hangleLogout = async () => { 
+    const handleLogout = async () => { 
         const { error } = await supabaseClient.auth.signOut();
+        player.reset(); // Reset player state on logout
         router.refresh();
 
         if(error){
@@ -45,6 +53,11 @@ const Header: React.FC<HeaderProps> = ({
             toast.success('Logged Out!');
         }
     }
+
+    if (!isMounted) {
+        return null;
+    }
+
     return (
         <div
         className={twMerge(`
@@ -54,7 +67,6 @@ const Header: React.FC<HeaderProps> = ({
             p-6
             `, className)}
         >
-
             <div className="
             w-full
             mb-4
@@ -97,8 +109,6 @@ const Header: React.FC<HeaderProps> = ({
                     ">
                         <RxCaretRight className="text-white" size={35} />
                     </button>
-                    
-
                 </div>
                 <div className="flex md:hidden gap-x-2 items-center">
                     <button
@@ -126,7 +136,6 @@ const Header: React.FC<HeaderProps> = ({
                     ">
                         <BiSearch className="text-black" size={20} />
                     </button>
-
                 </div>
 
                 <div
@@ -136,48 +145,48 @@ const Header: React.FC<HeaderProps> = ({
                 items-center
                 gap-x-4
                 ">
-                    {
-                        user?(
+                    {!isLoading && (
+                        user ? (
                             <div className="flex gap-x-4 items-center">
-                                 <Button 
-                                    onClick={hangleLogout} 
+                                <Button 
+                                    onClick={handleLogout} 
                                     variant="login" 
                                     className="px-6 py-2"
                                 >
                                     Logout
                                 </Button>
-                                 <Button 
+                                <Button 
                                     onClick={() => router.push('/account')} 
                                     variant="default"
                                     className="p-2"
                                 >
                                     <FaUserAlt />
                                 </Button>
-                        </div>
+                            </div>
                         ) : (
-                    
-                <>
-                <div>
-                    <Button
-                    onClick={authModal.onOpen}
-                    variant="login"
-                    className="px-6 py-2"
-                    >
-                        Sign Up
-                    </Button>
+                            <>
+                                <div>
+                                    <Button
+                                        onClick={authModal.onOpen}
+                                        variant="login"
+                                        className="px-6 py-2"
+                                    >
+                                        Sign Up
+                                    </Button>
+                                </div>
+                                <div>
+                                    <Button
+                                        onClick={authModal.onOpen}
+                                        variant="login"
+                                        className="px-6 py-2"
+                                    >
+                                        Log In
+                                    </Button>
+                                </div>
+                            </>
+                        )
+                    )}
                 </div>
-                <div>
-                    <Button
-                    onClick={authModal.onOpen}
-                    variant="login"
-                    className="px-6 py-2"
-                    >
-                        Log In
-                    </Button>
-                </div>
-                </>)}
-                </div>
-
             </div>
             {children}
         </div>

@@ -11,10 +11,13 @@ const getSongsByTitle = async (
         cookies: cookies
     });
 
+    const { data: { session } } = await supabase.auth.getSession();
+
     try {
         let query = supabase
             .from('songs')
-            .select('*');
+            .select('*')
+            .eq('user_id', session?.user?.id);
 
         // Apply genre filter if genres are selected
         if (genres && genres.length > 0) {
@@ -26,18 +29,14 @@ const getSongsByTitle = async (
             query = query.ilike('title', `%${title}%`);
         }
 
-        // Show last 10 recently added/searched songs when no search term
+        // Limit results if needed
         if (limitResults && !title) {
-            query = query
-                .order('created_at', { ascending: false })
-                .limit(10);
-        } else {
-            query = query.order('created_at', { ascending: false });
+            query = query.limit(10);
         }
 
-        const { data, error } = await query;
+        const { data, error } = await query.order('created_at', { ascending: false });
 
-        if (error) {
+        if (error && (error.message || Object.keys(error).length > 0)) {
             console.error('Search error:', error);
             return [];
         }

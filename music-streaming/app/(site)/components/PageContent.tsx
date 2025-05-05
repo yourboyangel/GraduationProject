@@ -3,9 +3,10 @@
 import SongItem from "@/components/SongItem";
 import useOnPlay from "@/hooks/useOnPlay";
 import { Song } from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import SeeMoreButton from "./SeeMoreButton";
+import { useUser } from "@/hooks/useUser";
 
 interface PageContentProps {
     songs: Song[];
@@ -19,18 +20,32 @@ const PageContent: React.FC<PageContentProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const supabaseClient = useSupabaseClient();
+    const { user } = useUser();
+
+    useEffect(() => {
+        if (!user) {
+            setSongs([]);
+            setHasMore(false);
+        } else {
+            setSongs(initialSongs);
+            setHasMore(initialSongs.length >= 10);
+        }
+    }, [user, initialSongs]);
 
     const loadMore = async () => {
+        if (!user) return;
+        
         try {
             setIsLoading(true);
             const { data, error } = await supabaseClient
                 .from('songs')
                 .select('*')
+                .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
-                .range(songs.length, songs.length + 8); // Load 8 more to maintain grid
+                .range(songs.length, songs.length + 10);
 
             if (error) throw error;
-            if (data.length < 8) setHasMore(false);
+            if (data.length < 10) setHasMore(false);
             setSongs([...songs, ...data]);
         } catch (error) {
             console.error('Error loading more songs:', error);
@@ -38,6 +53,14 @@ const PageContent: React.FC<PageContentProps> = ({
             setIsLoading(false);
         }
     };
+
+    if (!user) {
+        return (
+            <div className="mt-4 text-neutral-400">
+                Please log in to view songs.
+            </div>
+        )
+    }
 
     if (songs.length === 0) {
         return (

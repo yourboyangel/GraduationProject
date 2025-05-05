@@ -30,7 +30,7 @@ const genres = [
     'Reggae'
 ] as const;
 
-const UploadModal = () => {
+const UploadModal: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const uploadModal = useUploadModal();
     const { user } = useUser();
@@ -58,6 +58,83 @@ const UploadModal = () => {
             uploadModal.onClose();
         }
     }
+
+    const uploadSong = async (values: FieldValues) => {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (!session?.user?.id) {
+                toast.error('Not authenticated');
+                return;
+            }
+    
+            const imageFile = values.image?.[0];
+            const songFile = values.song?.[0];
+    
+            if (!imageFile || !songFile) {
+                toast.error('Missing files');
+                return;
+            }
+    
+            const uniqueID = uniqid();
+    
+            // Upload song
+            const { 
+                error: songError 
+            } = await supabaseClient.storage
+                .from('songs')
+                .upload(`song-${uniqueID}`, songFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+    
+            if (songError) {
+                return toast.error('Failed song upload');
+            }
+    
+            // Upload image
+            const { 
+                error: imageError
+            } = await supabaseClient.storage
+                .from('images')
+                .upload(`image-${uniqueID}`, imageFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+    
+            if (imageError) {
+                return toast.error('Failed image upload');
+            }
+    
+            // Create record
+            const { error: supabaseError } = await supabaseClient
+                .from('songs')
+                .insert({
+                    user_id: session.user.id,
+                    title: values.title,
+                    author: values.author,
+                    image_path: `image-${uniqueID}`,
+                    song_path: `song-${uniqueID}`,
+                    genre: values.genre
+                });
+    
+            if (supabaseError) {
+                console.error(supabaseError);
+                return toast.error('Failed creating song record');
+            }
+    
+            router.refresh();
+            setIsLoading(false);
+            toast.success('Song uploaded!');
+            reset();
+            uploadModal.onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error('Something went wrong');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const onSubmit: SubmitHandler<FieldValues> = async (values) => {
         try {
@@ -140,11 +217,9 @@ const UploadModal = () => {
             }
 
             router.refresh();
-            setIsLoading(false);
-            toast.success('Song created!');
-            reset();
             uploadModal.onClose();
-
+            reset();
+            toast.success('Song uploaded!');
         } catch (error) {
             toast.error("Something went wrong");
         } finally {
