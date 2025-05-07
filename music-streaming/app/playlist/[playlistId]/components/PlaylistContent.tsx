@@ -4,13 +4,16 @@ import { Song } from "@/types";
 import MediaItem from "@/components/MediaItem";
 import LikeButton from "@/components/LikeButton";
 import useOnPlay from "@/hooks/useOnPlay";
+import RemoveFromPlaylistButton from "@/components/RemoveFromPlaylistButton";
 
 interface PlaylistContentProps {
     songs: Song[];
+    playlistId: string;
 }
 
 const PlaylistContent: React.FC<PlaylistContentProps> = ({
-    songs
+    songs,
+    playlistId
 }) => {
     const onPlay = useOnPlay(songs);
 
@@ -35,7 +38,13 @@ const PlaylistContent: React.FC<PlaylistContentProps> = ({
                             data={song}
                         />
                     </div>
-                    <LikeButton songId={song.id} />
+                    <div className="flex gap-x-2 items-center">
+                        <RemoveFromPlaylistButton 
+                            songId={song.id} 
+                            playlistId={playlistId}
+                        />
+                        <LikeButton songId={song.id} />
+                    </div>
                 </div>
             ))}
         </div>

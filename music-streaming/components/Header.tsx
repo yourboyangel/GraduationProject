@@ -12,6 +12,7 @@ import { FaUserAlt } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import usePlayer from "@/hooks/usePlayer";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
     children: React.ReactNode;
@@ -51,6 +52,7 @@ const Header: React.FC<HeaderProps> = ({
         }
         else{
             toast.success('Logged Out!');
+            router.push('/'); // Redirect to homepage after successful logout
         }
     }
 
@@ -59,6 +61,7 @@ const Header: React.FC<HeaderProps> = ({
     }
 
     return (
+        
         <div
         className={twMerge(`
             h-fit

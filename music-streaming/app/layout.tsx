@@ -13,6 +13,7 @@ import getPlaylists from "@/actions/getPlaylists";
 import { Suspense } from "react";
 import Loading from "./loading";
 import PageTransition from "@/components/PageTransition";
+import QueryProvider from "@/providers/QueryProvider";
 
 const font = Figtree({
   variable: "--font-geist-sans",
@@ -40,18 +41,20 @@ export default async function RootLayout({
         <ToasterProvider/>
         <SupabaseProvider>
           <UserProvider>
-            <ModalProvider />
-            <CreatePlaylistModal />
-            <Sidebar songs={userSongs} playlists={userPlaylists}>
-              <div className="h-full">
-                <Suspense fallback={<Loading />}>
-                  <PageTransition>
-                    {children}
-                  </PageTransition>
-                </Suspense>
-              </div>
-            </Sidebar>
-            <Player />
+            <QueryProvider>
+              <ModalProvider />
+              <CreatePlaylistModal />
+              <Sidebar songs={userSongs} playlists={userPlaylists}>
+                <div className="h-full">
+                  <Suspense fallback={<Loading />}>
+                    <PageTransition>
+                      {children}
+                    </PageTransition>
+                  </Suspense>
+                </div>
+              </Sidebar>
+              <Player />
+            </QueryProvider>
           </UserProvider>
         </SupabaseProvider>
       </body>

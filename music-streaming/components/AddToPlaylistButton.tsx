@@ -61,7 +61,6 @@ const AddToPlaylistButton: React.FC<AddToPlaylistButtonProps> = ({
             } else {
                 toast.success("Added to playlist!");
                 router.refresh();
-                window.location.reload(); // Add immediate page refresh
             }
         } catch (error) {
             toast.error("Something went wrong");

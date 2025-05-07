@@ -3,34 +3,40 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { headers, cookies} from "next/headers";
 
 const getLikedSongs = async (): Promise<Song[]> => {
-    const supabase = createServerComponentClient({
-        cookies: cookies
-    });
+    try {
+        const supabase = createServerComponentClient({
+            cookies: cookies
+        });
 
-    const {
-        data: {
-            session
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            console.log('No authenticated user found');
+            return [];
         }
-    } = await supabase.auth.getSession();
 
-    const { data, error } = await supabase
-    .from('liked_songs')
-    .select('*, songs(*)')
-    .eq('user_id', session?.user?.id)
-    .order('created_at', {ascending: false});
+        const { data, error } = await supabase
+            .from('liked_songs')
+            .select('*, songs(*)')
+            .eq('user_id', user.id)
+            .order('created_at', {ascending: false});
 
-    if(error) {
-        console.log(error);
+        if(error) {
+            console.error('Error fetching liked songs:', error);
+            return [];
+        }
+
+        if(!data){
+            return [];
+        }
+
+        return data.map( (item) => ({
+            ...item.songs
+        }));
+    } catch (error) {
+        console.error('Unexpected error in getLikedSongs:', error);
         return [];
     }
-
-    if(!data){
-        return [];
-    }
-
-    return data.map( (item) => ({
-        ...item.songs
-    }))
 };
 
 export default getLikedSongs;

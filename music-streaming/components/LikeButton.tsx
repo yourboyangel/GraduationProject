@@ -28,12 +28,14 @@ const LikeButton: React.FC<LikeButtonProps> = ({
         }
 
         const fetchData = async () => {
-            const {data,error} = await supabaseClient
-            .from('liked_songs')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('song_id', songId)
-            .single()
+            const { data, error } = await supabaseClient
+                .from('liked_songs')
+                .select('*')
+                .match({
+                    user_id: user.id,
+                    song_id: songId
+                })
+                .maybeSingle();
 
             if(!error && data) {
                 setIsLiked(true);
@@ -55,12 +57,11 @@ const LikeButton: React.FC<LikeButtonProps> = ({
                 .delete()
                 .eq('user_id', user.id)
                 .eq('song_id', songId);
-        if(error){
-            toast.error(error.message);
-        } else {
-            setIsLiked(false);
-        }
-            
+            if(error){
+                toast.error(error.message);
+            } else {
+                setIsLiked(false);
+            }
         } else {
             const { error } = await supabaseClient
                 .from('liked_songs')
@@ -68,12 +69,12 @@ const LikeButton: React.FC<LikeButtonProps> = ({
                     song_id: songId,
                     user_id: user.id
                 });
-                if(error){
-                    toast.error(error.message);
-                } else {
-                    setIsLiked(true);
-                    toast.success('Liked!');
-                }
+            if(error){
+                toast.error(error.message);
+            } else {
+                setIsLiked(true);
+                toast.success('Liked!');
+            }
         }
         router.refresh();
     }
@@ -87,12 +88,11 @@ const LikeButton: React.FC<LikeButtonProps> = ({
             onClick={handleLike}
         >
             <Icon 
-                color={isLiked ? '#6F5CF1' : 'white'} // Changed from '#22c55e' to '#6F5CF1'
+                color={isLiked ? '#6F5CF1' : 'white'}
                 size={25} 
             />
         </button>
     );
-
 }
 
 export default LikeButton;

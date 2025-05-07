@@ -5,6 +5,7 @@ import PlaylistContent from "./components/PlaylistContent";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import ShuffleButton from "@/components/ShuffleButton";
+import PlaylistPlayButton from "@/components/PlaylistPlayButton";
 
 export const revalidate = 0;
 
@@ -95,15 +96,22 @@ const Playlist = async ({ params }: PlaylistPageProps) => {
                     </div>
                     {songs.length > 0 && (
                         <div className="flex items-center gap-x-2 mt-4">
-                            <ShuffleButton 
-                                songs={songs}
-                                className="ml-auto"
-                            />
+                            <div className="ml-auto flex items-center gap-x-2">
+                                <PlaylistPlayButton 
+                                    songs={songs}
+                                />
+                                <ShuffleButton 
+                                    songs={songs}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
             </Header>
-            <PlaylistContent songs={songs} />
+            <PlaylistContent 
+                songs={songs} 
+                playlistId={params.playlistId}
+            />
         </div>
     );
 }

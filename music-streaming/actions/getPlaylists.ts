@@ -1,38 +1,36 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-
-export interface Playlist {
-    id: string;
-    user_id: string;
-    name: string;
-    description?: string;
-    image_path: string;
-    created_at: string;
-}
+import { Playlist } from "@/types";
 
 const getPlaylists = async (): Promise<Playlist[]> => {
-    const supabase = createServerComponentClient({
-        cookies: cookies
-    });
+    try {
+        const supabase = createServerComponentClient({
+            cookies: cookies
+        });
 
-    const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-    if (!session) {
+        if (userError || !user) {
+            console.log('No authenticated user found');
+            return [];
+        }
+
+        const { data, error } = await supabase
+            .from('playlists')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching playlists:', error);
+            return [];
+        }
+
+        return data || [];
+    } catch (error) {
+        console.error('Unexpected error in getPlaylists:', error);
         return [];
     }
-
-    const { data, error } = await supabase
-        .from('playlists')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error(error);
-        return [];
-    }
-
-    return data || [];
 };
 
 export default getPlaylists;
