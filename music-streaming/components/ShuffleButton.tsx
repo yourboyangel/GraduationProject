@@ -45,23 +45,21 @@ const ShuffleButton: React.FC<ShuffleButtonProps> = ({
             // Create a new array and shuffle it
             const shuffledSongs = shuffleArray([...songs]);
             
-            // Start with current song if one is playing
+            // If there's a currently playing song, keep it at the current position
             if (player.activeId) {
+                const currentIndex = player.ids.findIndex(id => id === player.activeId);
                 const currentSong = shuffledSongs.find(song => song.id === player.activeId);
                 if (currentSong) {
-                    const index = shuffledSongs.indexOf(currentSong);
-                    shuffledSongs.splice(index, 1);
-                    shuffledSongs.unshift(currentSong);
+                    // Remove the current song from its position in the shuffled array
+                    const shuffledIndex = shuffledSongs.indexOf(currentSong);
+                    shuffledSongs.splice(shuffledIndex, 1);
+                    // Insert it at the current position
+                    shuffledSongs.splice(currentIndex, 0, currentSong);
                 }
             }
 
             player.setIds(shuffledSongs.map(song => song.id));
             player.setIsShuffled(true);
-        }
-
-        // Start playing if not already
-        if (!player.activeId && songs.length > 0) {
-            player.setId(songs[0].id);
         }
     };
 

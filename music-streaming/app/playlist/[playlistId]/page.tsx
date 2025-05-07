@@ -16,7 +16,20 @@ interface PlaylistPageProps {
 }
 
 const Playlist = async ({ params }: PlaylistPageProps) => {
-    const supabase = createServerComponentClient({ cookies });
+    // Create Supabase client with cookies
+    const cookieStore = cookies();
+    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+        return (
+            <div className="text-white p-8">Authentication error. Please try again.</div>
+        );
+    }
+
+    // Get playlist data
     const playlist = await getPlaylistById(params.playlistId);
     const songs = playlist?.songs || [];
 
