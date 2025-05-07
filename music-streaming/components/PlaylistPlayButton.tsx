@@ -36,7 +36,7 @@ const PlaylistPlayButton: React.FC<PlaylistPlayButtonProps> = ({
                 h-10
                 w-10 
                 rounded-full 
-                bg-[#2D2053]
+                bg-[#2D2030]
                 p-1 
                 cursor-pointer
                 hover:scale-110
