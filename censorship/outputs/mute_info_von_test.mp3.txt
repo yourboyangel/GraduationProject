@@ -1,0 +1,7 @@
+Muted regions in cleaned_von_test.mp3:
+7.70s - 8.15s: 'bitch'
+9.55s - 10.19s: 'bitch'
+13.50s - 14.00s: 'bitch'
+16.90s - 17.33s: 'shit'
+21.71s - 22.22s: 'bitch'
+25.70s - 26.15s: 'bitch'

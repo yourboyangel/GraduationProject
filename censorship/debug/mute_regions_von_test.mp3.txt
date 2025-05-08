@@ -1,0 +1,10 @@
+Audio length: 31.68 seconds
+Timeline: ----------------------------------------------------------------------------------------------------
+........................MM....MMM.........MMM........MM.............MMM..........MM.................
+Muted regions:
+  7.70s - 8.15s: 'bitch' in 'a bitch'
+  9.55s - 10.19s: 'bitch' in 'of bitch'
+  13.50s - 14.00s: 'bitch' in 'minutes bitch'
+  16.90s - 17.33s: 'shit' in 'ghost shit running'
+  21.71s - 22.22s: 'bitch' in 'of bitch she'
+  25.70s - 26.15s: 'bitch' in 'minutes bitch'
