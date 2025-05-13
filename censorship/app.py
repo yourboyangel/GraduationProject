@@ -5,6 +5,11 @@ import whisper
 import torch
 import requests
 import string
+import warnings
+
+# Suppress the specific Triton warning
+warnings.filterwarnings("ignore", message="Failed to launch Triton kernels.*")
+
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -15,13 +20,12 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # Load Whisper model with GPU support
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
-# Changed Whisper model from "base" to "small"
-# Other options include: "tiny", "medium", "large"
-# Smaller models are faster but less accurate; larger models are more accurate but slower.
+
+# Whisper model configuration
 model = whisper.load_model("tiny", device=device)
 
 # RapidAPI configuration
-API_KEY = "d0c1e7f61bmsh34c22e660620feep10b4f5jsn286b58df7347" # Please replace with your actual RapidAPI key
+API_KEY = "d0c1e7f61bmsh34c22e660620feep10b4f5jsn286b58df7347"  # Please replace with your actual RapidAPI key
 API_HOST = "neutrinoapi-bad-word-filter.p.rapidapi.com"
 API_URL = "https://neutrinoapi-bad-word-filter.p.rapidapi.com/bad-word-filter"
 
@@ -40,7 +44,7 @@ def fetch_bad_words(text):
     }
     data = {
         "content": text,
-        "censor-character": "*" # Character used for censoring by the API
+        "censor-character": "*"  # Character used for censoring by the API
     }
     try:
         response = requests.post(API_URL, headers=headers, data=data)
@@ -51,12 +55,12 @@ def fetch_bad_words(text):
             censored_text = api_data.get("censored-content", text)
             words = text.lower().split()
             censored_words = censored_text.lower().split()
-            
+
             # Identify words that were changed (i.e., censored)
             bad_words_detected = [
                 word.strip(string.punctuation)
                 for word, cword in zip(words, censored_words)
-                if word != cword and "*" in cword # Check if word was altered and contains censor char
+                if word != cword and "*" in cword  # Check if word was altered and contains censor char
             ]
             bad_words_detected = list(set(bad_words_detected))  # Deduplicate
             print(f"Fetched bad words from API: {bad_words_detected}")
@@ -124,15 +128,15 @@ def process_audio(input_path):
 
     # Load and convert audio to WAV for Whisper
     try:
-        audio = AudioSegment.from_file(input_path) # Use from_file for broader format support initially
+        audio = AudioSegment.from_file(input_path)  # Use from_file for broader format support
     except Exception as e:
         print(f"Error loading audio file {input_path} with pydub: {e}")
-        raise # Re-raise the exception to be caught by the caller
+        raise  # Re-raise the exception to be caught by the caller
 
     # Define WAV path
     base, ext = os.path.splitext(input_path)
     wav_path = base + ".wav"
-    
+
     try:
         print(f"Converting to WAV: {wav_path}")
         audio.export(wav_path, format="wav")
@@ -140,13 +144,19 @@ def process_audio(input_path):
         print(f"Error exporting to WAV: {e}")
         raise
 
-    # Transcribe with Whisper
-    print("Starting transcription...")
+    # Transcribe with Whisper, enabling word timestamps
+    print("Starting transcription with word timestamps...")
     try:
-        result = model.transcribe(wav_path, language="en") # Specify language if known
+        # Enable word timestamps in the transcription options
+        result = model.transcribe(
+            wav_path, 
+            language="en",
+            word_timestamps=True,  # Enable word-level timestamps
+            verbose=False  # Set to True for more detailed output during transcription
+        )
     except Exception as e:
         print(f"Error during transcription: {e}")
-        if os.path.exists(wav_path): # Clean up WAV file
+        if os.path.exists(wav_path):  # Clean up WAV file
             os.remove(wav_path)
         raise
         
@@ -156,7 +166,7 @@ def process_audio(input_path):
     explicit_words = fetch_bad_words(result["text"])
     if not explicit_words:
         print("No bad words detected by API, or API error. Skipping censorship.")
-        if os.path.exists(wav_path): # Clean up WAV file
+        if os.path.exists(wav_path):  # Clean up WAV file
             os.remove(wav_path)
         # Return original MP3 if no bad words or if API failed
         return input_path 
@@ -164,45 +174,33 @@ def process_audio(input_path):
     print(f"Explicit words to censor: {explicit_words}")
     word_timestamps = []
 
-    # Process segments to find timestamps of explicit words
-    # Whisper provides segments and can provide word-level timestamps if enabled (though not directly used here for simplicity)
-    # We are estimating word timestamps based on segment duration and number of words.
+    # Process word timestamps to find explicit words
     for segment in result.get("segments", []):
-        segment_text = segment["text"].lower()
-        segment_start_ms = segment["start"] * 1000  # Convert to milliseconds
-        segment_end_ms = segment["end"] * 1000    # Convert to milliseconds
-        
-        print(f"Segment: '{segment_text}' | Start: {segment_start_ms/1000:.2f}s | End: {segment_end_ms/1000:.2f}s")
-
-        words_in_segment_raw = segment_text.split()
-        words_in_segment_clean = [w.strip(string.punctuation) for w in words_in_segment_raw]
-        
-        if not words_in_segment_clean:
-            continue
-
-        avg_word_duration_ms = (segment_end_ms - segment_start_ms) / len(words_in_segment_clean)
-
-        for i, word in enumerate(words_in_segment_clean):
-            if word in explicit_words:
-                word_start_ms = segment_start_ms + (i * avg_word_duration_ms)
-                word_end_ms = word_start_ms + avg_word_duration_ms
+        # Check if word-level data is available
+        if "words" in segment:
+            for word_data in segment["words"]:
+                word = word_data.get("word", "").lower().strip(string.punctuation)
+                # Some Whisper versions might include leading spaces in words
+                word = word.strip()
                 
-                # Add a buffer to ensure the entire word is caught
-                buffer_ms = 200  # Milliseconds buffer on each side
-                
-                # Ensure buffered start is not negative
-                buffered_start_ms = max(0, word_start_ms - buffer_ms)
-                # Ensure buffered end does not exceed audio length (or segment end for more precision if needed)
-                buffered_end_ms = min(len(audio), word_end_ms + buffer_ms)
-
-                word_timestamps.append((buffered_start_ms, buffered_end_ms))
-                print(f"Found explicit word: '{word}' | Estimated time: {buffered_start_ms/1000:.2f}s - {buffered_end_ms/1000:.2f}s")
+                if word in explicit_words:
+                    start_time_ms = int(word_data["start"] * 1000)  # Convert to ms
+                    end_time_ms = int(word_data["end"] * 1000)      # Convert to ms
+                    
+                    # Add a buffer around the word for better censoring
+                    buffer_ms = 200  # Buffer in milliseconds
+                    buffered_start_ms = max(0, start_time_ms - buffer_ms)
+                    buffered_end_ms = min(len(audio), end_time_ms + buffer_ms)
+                    
+                    word_timestamps.append((buffered_start_ms, buffered_end_ms))
+                    print(f"Found explicit word: '{word}' | Exact time: {start_time_ms/1000:.2f}s - {end_time_ms/1000:.2f}s")
+                    print(f"With buffer: {buffered_start_ms/1000:.2f}s - {buffered_end_ms/1000:.2f}s")
 
     if not word_timestamps:
-        print("No explicit words matched in segments after timestamp calculation.")
-        if os.path.exists(wav_path): # Clean up WAV file
+        print("No explicit words matched with timestamps.")
+        if os.path.exists(wav_path):  # Clean up WAV file
             os.remove(wav_path)
-        return input_path # Return original if no words to mute
+        return input_path  # Return original if no words to mute
 
     # Merge overlapping/adjacent mute intervals for efficiency
     if word_timestamps:
@@ -210,21 +208,19 @@ def process_audio(input_path):
         merged_timestamps = [word_timestamps[0]]
         for current_start, current_end in word_timestamps[1:]:
             prev_start, prev_end = merged_timestamps[-1]
-            if current_start < prev_end: # Overlap or adjacent
+            if current_start <= prev_end + 100:  # Overlap or adjacent (with small tolerance)
                 merged_timestamps[-1] = (prev_start, max(prev_end, current_end))
             else:
                 merged_timestamps.append((current_start, current_end))
         word_timestamps = merged_timestamps
         print(f"Merged mute timestamps: {[(s/1000, e/1000) for s, e in word_timestamps]}")
 
-
     # Apply mutes (create silent segments)
-    # It's generally safer to build a new audio segment list and concatenate
     processed_audio = AudioSegment.empty()
     current_pos_ms = 0
-    
-    for start_mute_ms, end_mute_ms in sorted(word_timestamps): # Ensure they are sorted
-        start_mute_ms = int(start_mute_ms) # Ensure integer for slicing
+
+    for start_mute_ms, end_mute_ms in sorted(word_timestamps):  # Ensure they are sorted
+        start_mute_ms = int(start_mute_ms)  # Ensure integer for slicing
         end_mute_ms = int(end_mute_ms)
 
         # Add audio before the mute
@@ -242,8 +238,8 @@ def process_audio(input_path):
     # Add remaining audio after the last mute
     if current_pos_ms < len(audio):
         processed_audio += audio[current_pos_ms:]
-    
-    audio = processed_audio # Replace original audio with processed one
+
+    audio = processed_audio  # Replace original audio with processed one
 
     # Export cleaned audio
     output_filename = "cleaned_" + os.path.basename(input_path)
@@ -256,7 +252,7 @@ def process_audio(input_path):
         audio.export(output_path_mp3, format="mp3")
     except Exception as e:
         print(f"Error exporting cleaned MP3: {e}")
-        if os.path.exists(wav_path): # Clean up WAV file
+        if os.path.exists(wav_path):  # Clean up WAV file
             os.remove(wav_path)
         raise
 
