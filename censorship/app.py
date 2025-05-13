@@ -6,12 +6,14 @@ import torch
 import requests
 import string
 import warnings
+from flask_cors import CORS
 
 # Suppress the specific Triton warning
 warnings.filterwarnings("ignore", message="Failed to launch Triton kernels.*")
 
 
 app = Flask(__name__)
+CORS(app)
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "outputs"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
