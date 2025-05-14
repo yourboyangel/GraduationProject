@@ -3,7 +3,7 @@
 import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const ProfilePage = () => {
     const router = useRouter();
@@ -15,6 +15,7 @@ const ProfilePage = () => {
     const [songInfo, setSongInfo] = useState<any>(null);
     let mediaRecorder: MediaRecorder | null = null;
     let audioChunks: Blob[] = [];
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     console.log("AUDD TOKEN:", process.env.NEXT_PUBLIC_AUDD_API_TOKEN);
 
@@ -154,21 +155,13 @@ const ProfilePage = () => {
                     type="file"
                     accept="audio/*"
                     style={{ display: "none" }}
+                    ref={fileInputRef}
                     onChange={handleFileChange}
                 />
-                <button 
-                    className="
-                        bg-purple-600 
-                        text-white 
-                        px-4 
-                        py-2 
-                        rounded-md 
-                        font-medium 
-                        hover:bg-purple-700 
-                        transition
-                        cursor-pointer
-                    "
+                <button
+                    onClick={() => fileInputRef.current?.click()}
                     disabled={loading}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-md font-medium hover:bg-purple-700 transition cursor-pointer"
                 >
                     {loading ? "Processing..." : "Filter Explicit Content"}
                 </button>
@@ -192,7 +185,7 @@ const ProfilePage = () => {
                     disabled={shazamLoading}
                 >
                     <img src="/images/shazam.svg" alt="Shazam Logo" className="w-6 h-6 mr-2" />
-                    {recording ? "Listening..." : shazamLoading ? "Recognizing..." : "Shazam Your Music"}
+                    {recording ? "Listening..." : shazamLoading ? "Recognizing..." : "Music Recognition"}
                 </button>
 
                 {shazamResult && (
